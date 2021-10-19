@@ -23,7 +23,7 @@ docker pull anibani/pytorch:1.8.1-cuda11.1
 
 ## 2.2 run a container
 ~~~
-docker run --rm -it --init --gpus=all --user="$(id -u):$(id -g)" --volume="$PWD:/app" --volume=/home/yujiang/.log/constexpr:/home/user/.log/constexpr anibali/pytorch:1.8.1-cuda11.1 bash
+docker run -it --init --gpus=all --user="$(id -u):$(id -g)" --volume="$PWD:/app" --volume=/home/yujiang/.log/constexpr:/home/user/.log/constexpr anibali/pytorch:1.8.1-cuda11.1 bash
 ~~~
 
 > the default user in contrainer is *user*
