@@ -4,9 +4,9 @@
 
 ## 1.1 install docker
 
-https://docs.docker.com/get-docker/
+Fetch docker from offical site: https://docs.docker.com/get-docker/
 
-> ![Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)
+> how to insall docker please read [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)
 
 ## 1.2 install NVIDIA Container Toolkit
 
@@ -17,49 +17,99 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
 
 ## 2.1 create or docker pull a image with pytorch and cuda with your custom version
 to get more info, see https://github.com/anibali/docker-pytorch
-~~~
-docker pull anibani/pytorch:1.8.1-cuda11.1
+~~~bash
+    $ docker pull anibani/pytorch:1.8.1-cuda11.1
 ~~~
 
 ## 2.2 run a container
-~~~
-docker run -it --init --gpus=all --user="$(id -u):$(id -g)" --volume="$PWD:/app" --volume=/home/yujiang/.log/constexpr:/home/user/.log/constexpr anibali/pytorch:1.8.1-cuda11.1 bash
+~~~bash
+    $ docker run -itd --init  --gpus=all \
+    --user="$(id -u):$(id -g)" --name torch_docker \
+    --volume="$PWD:/app" --publish=8888:8888 \
+    anibali/pytorch:1.8.1-cuda11.1 /bin/bash
 ~~~
 
-> the default user in contrainer is *user*
+> the default user in contrainer is *user*,if you have trouble in wakeup container by using `--user` parameter please drop it and retry.Learn more about `docker run` usage please check https://docs.docker.com/engine/reference/commandline/run/
 
 
 # 3 install system software
 
 ## 3.1 install system software
-~~~
-sudo apt-get update
+~~~bash
+    $ sudo apt-get update
 
-# to install gcc
-sudo apt-get install build-essential
+    # to install gcc
+    $ sudo apt-get install build-essential
 
-sudo apt-get install vim
+    $ sudo apt-get install vim
 ~~~
 
 
 ## 3.2 install optional software
-~~~
-# install github cli to checkout pr
-conda install gh --channel conda-forge
+~~~bash
+    # install github cli to checkout pr
+    $ conda install gh --channel conda-forge
 
-# to install cmake
-pip install cmake
+    # to install cmake
+    $ pip install cmake
 ~~~
 
-# 3.3 install python library
-~~~
-pip install rqalpha
-pip install jqdatasdk
-pip install huggingface_hub
-pip install dill
-pip install pytorch_lightning
-pip install joblib
-pip install lightgbm
+## 3.3 install python library
+~~~bash 
+    $ pip install rqalpha jqdatasdk huggingface_hub dill pytorch_lightning joblib lightgbm jupyterlab
 ~~~
 
 # 4 run your objective library or project
+
+## 4.1 setup jupyter lab
+
+* step1: launch jupyter lab in docker container
+* step2: visit jupyter lab via host browser
+
+###  step1: launch jupyter lab in docker container
+~~~bash
+    # open mapping directory
+    $ cd /app
+
+    # foreground run jupyter lab
+    $ jupyter lab --no-browser --ip=0.0.0.0 --port=8888 --allow-root
+~~~
+
+> Optional: launch juypter lab in background
+
+~~~bash
+    # background run jupyter lab
+    $ jupyter lab --no-browser --ip=0.0.0.0 --port=8888 --allow-root > jupyterlab.log 2>&1 &
+
+    # shutdown background jupyter lab process(optional)
+    $ ps -aux | grep jupyter-lab | grep -v grep | awk '{print $2}'
+~~~
+
+**Attention:** if you exit container,please use `docker exec --it torch_docker /bin/bash` to enter container enviornment,then continue following the tutorial.
+
+### step2: visit jupyter lab via host browser
+Open your host browser and enter `http://localhost:8888` or `http://x.x.x.x:8888` in browser address bar,then jupyter lab will check your visit token,where to find visit token?You can easily find token in container terminal output.For example:
+
+~~~bash
+    To access the server, open this file in a browser:
+        file:///home/user/.local/share/jupyter/runtime/jpserver-129-open.html
+    Or copy and paste one of these URLs:
+        http://caa7b2515101:8001/lab?token=6ddcbc89fa1cb716721a739551e6a926e30f1adbe38470d3
+~~~
+
+copy token after equal symbolic and paste it in jupyter verfication box.
+
+![jupyter_lab_verfication_box](./img/jupyterlab_token.png)
+
+> Tips: launch jupyter lab in background,please check `/app/jupyterlab.log`.
+
+**note:** `http://x.x.x.x` means your host ip address.
+
+## 4.2 setup database
+coming soon..
+
+## 4.3 others
+coming soon..
+
+# 5 Contact Us
+Please create an issue or send email to `yujiangallen@126.com`.
