@@ -1,36 +1,40 @@
-# pytorch-docker-guideline
+# how to build docker image via dockerfile
 
-# 1 pre-requisites
+## 1 pre-requisites
 
-## 1.1 install docker
+### 1.1 install docker
 
 Fetch docker from offical site: https://docs.docker.com/get-docker/
 
 > how to insall docker please read [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)
 
-## 1.2 install NVIDIA Container Toolkit
+### 1.2 install NVIDIA Container Toolkit
 
 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker
 
 
-# 2 run a docker image with pytorch and cuda
+## 2. Build docker image
 
-## 2.1 create or docker pull a image with pytorch and cuda with your custom version
-to get more info, see https://github.com/anibali/docker-pytorch
+### 2.1 create docker image via dockerfile
 ~~~bash
-    $ docker pull anibani/pytorch:1.8.1-cuda11.1
+    # step 1 open dockerfile directory
+    $ cd /absolute/path/to/torch1.8.1-cuda11.1-ubuntu20.04
+    # step 2 build dockerfile
+    $ docker build -t pytorch:1.8.1-cuda11.1 .
 ~~~
 
-## 2.2 run a container
+> Tips: you can use `docker build -f /absolute/path/to/torch1.8.1-cuda11.1-ubuntu20.04 -t pytorch:1.8.1-cuda11.1 .` command to build docker image in any directory.
+
+### 2.2 run a container
 ~~~bash
     # create container
     $ docker run -itd --init --gpus=all \
-    --user="$(id -u):$(id -g)" --name=torch_docker \
+    --user=user --name=quant \
     --volume="$PWD:/app" --publish=8888:8888 \
-    anibali/pytorch:1.8.1-cuda11.1 /bin/bash
+    pytorch:1.8.1-cuda11.1 /bin/bash
 
     # enter container and test
-    $ docker exec -it torch_docker bash
+    $ docker exec -it quant bash
     $ nvidia-smi
 
     Thu Oct 21 09:49:06 2021
@@ -58,44 +62,62 @@ to get more info, see https://github.com/anibali/docker-pytorch
     +-----------------------------------------------------------------------------+
 ~~~
 
-> the default user in contrainer is *user*,if you have trouble in wakeup container by using `--user` parameter please drop it and retry.Learn more about `docker run` usage please check https://docs.docker.com/engine/reference/commandline/run/
+> Learn more about `docker run` usage please check https://docs.docker.com/engine/reference/commandline/run/
 
+## 3 run your objective library or project
 
-# 3 install system software
+### 3.1 make current account as root
 
-## 3.1 install system software
+* step 1: user root account to enter container
+* step 2: add user to sudoer
+
+#### step 1: user root account to enter container
 ~~~bash
-    $ sudo apt-get update
-
-    # to install gcc
-    $ sudo apt-get install build-essential
-
-    $ sudo apt-get install vim
+    $ docker exec -it -u root quant bash
 ~~~
 
-
-## 3.2 install optional software
+#### step 2: add user to sudoer
 ~~~bash
-    # install github cli to checkout pr
-    $ conda install gh --channel conda-forge
+    # 1. add write permission to sudoers 
+    $ chmod o+w /etc/sudoers
 
-    # to install cmake
-    $ pip install cmake
+    # 2. editor sudoers file add user to sudo file and save
+    $ vim /etc/sudoers
+    
+    # User privilege specification
+    root    ALL=(ALL:ALL) ALL
+    # --------- add ------------
+    user    ALL=(ALL:ALL) ALL
+    # --------- add ------------
+
+    # 3. remove write permission to sudoers
+    $ chmod o-w
 ~~~
 
-## 3.3 install python library
-~~~bash 
-    $ pip install rqalpha jqdatasdk huggingface_hub dill pytorch_lightning joblib lightgbm jupyterlab
+### 3.2 setup python packages
+
+* step 1: prepare your requirements
+* step 2: install requirements in container
+
+#### step 1: prepare your requirements
+~~~bash
+    $ cd /app
+    $ echo -e "flask\npandas" > requirements.txt
 ~~~
 
-# 4 run your objective library or project
+> Tips: you can prepare requirements in host,then copy file to docker mapping directory.
 
-## 4.1 setup jupyter lab
+#### step 2: install requirements in container
+~~~bash
+    $ pip install -r requirements.txt
+~~~
 
-* step1: launch jupyter lab in docker container
-* step2: visit jupyter lab via host browser
+### 3.3 setup jupyter lab
 
-###  step1: launch jupyter lab in docker container
+* step 1: launch jupyter lab in docker container
+* step 2: visit jupyter lab via host browser
+
+####  step 1: launch jupyter lab in docker container
 ~~~bash
     # open mapping directory
     $ cd /app
@@ -114,9 +136,7 @@ to get more info, see https://github.com/anibali/docker-pytorch
     $ ps -aux | grep jupyter-lab | grep -v grep | awk '{print $2}'
 ~~~
 
-**Attention:** if you exit container,please use `docker exec --it torch_docker /bin/bash` to enter container enviornment,then continue following the tutorial.
-
-### step2: visit jupyter lab via host browser
+#### step 2: visit jupyter lab via host browser
 Open your host browser and enter `http://localhost:8888` or `http://x.x.x.x:8888` in browser address bar,then jupyter lab will check your visit token,where to find visit token?You can easily find token in container terminal output.For example:
 
 ~~~bash
@@ -128,17 +148,19 @@ Open your host browser and enter `http://localhost:8888` or `http://x.x.x.x:8888
 
 copy token after equal symbolic and paste it in jupyter verfication box.
 
-![jupyter_lab_verfication_box](./img/jupyterlab_token.png)
+![jupyter_lab_verfication_box](../img/jupyterlab_token.png)
 
 > Tips: launch jupyter lab in background,please check `/app/jupyterlab.log`.
 
 **note:** `http://x.x.x.x` means your host ip address.
 
-## 4.2 setup database
+### 3.4 setup database
 coming soon..
 
-## 4.3 others
+### 3.5 others
 coming soon..
 
-# 5 Contact Us
+**Attention:** Chapter 3 precondition is based on you have already in container,if you exit container,please use `docker exec --it quant /bin/bash` to reenter container enviornment,then continue following the tutorial.
+
+## 4 Contact Us
 Please create an issue or send email to `yujiangallen@126.com`.
