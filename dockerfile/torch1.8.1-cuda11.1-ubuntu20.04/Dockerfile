@@ -1,8 +1,11 @@
 # This dockerfile uses the nvidia/cuda based on ubuntu image
 # VERSION 1 - EDITION 1
 # Author: zzy
-# Description: image using tsinghua mirrors to replace default mirrors.
 # Command: docker build -f /absolute/path/to/Dockerfile -t repository_name:tag_description .
+# Description: 
+# 1. image using tsinghua mirrors to replace default mirrors.
+# 2. avaiable software: git, vim, curl, gcc, conda, etc
+# 3. avaiable python packages: pytorch=1.8.1, torchvision=0.9.1, jupyterlab, etc
 FROM nvidia/cuda:11.1.1-base-ubuntu20.04
 
 # Ubuntu Release name
@@ -81,16 +84,15 @@ custom_channels:\n\
   msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud\n\
   bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud\n\
   menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud\n\
-  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" > /home/user/.condarc \
+  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud\n\
+  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" > /home/user/.condarc \
 && conda install -y python==3.8.8 \
-# && conda clean -ya
 #
 # step 5.1: CUDA 11.1-specific steps
 #
-&& conda install -y -c conda-forge cudatoolkit=11.1.1 \
-&& conda install -y -c pytorch \
-  "pytorch=1.8.1=py3.8_cuda11.1_cudnn8.0.5_0" \
-  "torchvision=0.9.1=py38_cu111" \
+# && conda install -y -c conda-forge cudatoolkit=11.1.1 \
+&& conda install -y -c pytorch -c conda-forge \
+  pytorch==1.8.1 torchvision==0.9.1 cudatoolkit=11.1.1 \
 #
 # step 5.2: Quantitative trading environment setup steps
 #
