@@ -11,6 +11,9 @@
 # Fetch image from nvidia official respository
 FROM nvidia/cuda:11.1.1-base-ubuntu20.04
 
+# container expose port 22
+EXPOSE 22
+
 # Ubuntu Release name
 ARG RELEASE_NAME=focal
 # Get rid of the warning: "debconf: unable to initialize frontend: Dialog"
