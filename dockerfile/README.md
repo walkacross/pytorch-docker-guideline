@@ -18,7 +18,7 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
 ### 2.1 create docker image via dockerfile
 ~~~bash
     # step 1 open dockerfile directory
-    $ cd /absolute/path/to/torch1.8.1-cuda11.1-ubuntu20.04
+    $ cd /absolute/path/to/torch1.8.1-cuda11.1-nossh-ubuntu20.04
     # step 2 build dockerfile
     $ docker build -t pytorch:1.8.1-cuda11.1 .
 ~~~
@@ -27,14 +27,13 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
 
 ### 2.2 run a container
 ~~~bash
-    # create container
-    $ docker run -itd --init --gpus=all \
+    # create container and run
+    $ docker run -it --init --gpus=all \
     --user=user --name=quant \
     --volume="$PWD:/app" --publish=8888:8888 \
-    pytorch:1.8.1-cuda11.1 /bin/bash
+    pytorch:1.8.1-cuda11.1
 
-    # enter container and test
-    $ docker exec -it quant bash
+    # check gpu status
     $ nvidia-smi
 
     Thu Oct 21 09:49:06 2021
@@ -62,39 +61,16 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
     +-----------------------------------------------------------------------------+
 ~~~
 
+**Note:**
+1. Create and run container in background by adding `-d` parameter in above command,but if do so you need to do one more step,execute `docker exec -it quant /bin/bash` in terminal then you can reenter container.
+2. Using superuser to enter container,please specify `--user=root` in `docker run` or `docker exec`.
+3. we also provide `ssh` image,if using `ssh` image default username is **user** and password is **user123**.
+
 > Learn more about `docker run` usage please check https://docs.docker.com/engine/reference/commandline/run/
 
 ## 3 run your objective library or project
 
-### 3.1 make current account as root
-
-* step 1: user root account to enter container
-* step 2: add user to sudoer
-
-#### step 1: user root account to enter container
-~~~bash
-    $ docker exec -it -u root quant bash
-~~~
-
-#### step 2: add user to sudoer
-~~~bash
-    # 1. add write permission to sudoers 
-    $ chmod o+w /etc/sudoers
-
-    # 2. editor sudoers file add user to sudo file and save
-    $ vim /etc/sudoers
-    
-    # User privilege specification
-    root    ALL=(ALL:ALL) ALL
-    # --------- add ------------
-    user    ALL=(ALL:ALL) ALL
-    # --------- add ------------
-
-    # 3. remove write permission to sudoers
-    $ chmod o-w
-~~~
-
-### 3.2 setup python packages
+### 3.1 setup python packages
 
 * step 1: prepare your requirements
 * step 2: install requirements in container
@@ -112,7 +88,7 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
     $ pip install -r requirements.txt
 ~~~
 
-### 3.3 setup jupyter lab
+### 3.2 setup jupyter lab
 
 * step 1: launch jupyter lab in docker container
 * step 2: visit jupyter lab via host browser
@@ -133,7 +109,7 @@ https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.
     $ jupyter lab --no-browser --ip=0.0.0.0 --port=8888 --allow-root > jupyterlab.log 2>&1 &
 
     # shutdown background jupyter lab process(optional)
-    $ ps -aux | grep jupyter-lab | grep -v grep | awk '{print $2}'
+    $ kill -9 `ps -aux | grep jupyter-lab | grep -v grep | awk '{print $2}'`
 ~~~
 
 #### step 2: visit jupyter lab via host browser
@@ -154,10 +130,7 @@ copy token after equal symbolic and paste it in jupyter verfication box.
 
 **note:** `http://x.x.x.x` means your host ip address.
 
-### 3.4 setup database
-coming soon..
-
-### 3.5 others
+### 3.3 others
 coming soon..
 
 **Attention:** Chapter 3 precondition is based on you have already in container,if you exit container,please use `docker exec --it quant /bin/bash` to reenter container enviornment,then continue following the tutorial.

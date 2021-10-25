@@ -24,13 +24,12 @@ to get more info, see https://github.com/anibali/docker-pytorch
 ## 2.2 run a container
 ~~~bash
     # create container
-    $ docker run -itd --init --gpus=all \
+    $ docker run -it --init --gpus=all \
     --user="$(id -u):$(id -g)" --name=torch_docker \
     --volume="$PWD:/app" --publish=8888:8888 \
     anibali/pytorch:1.8.1-cuda11.1 /bin/bash
 
-    # enter container and test
-    $ docker exec -it torch_docker bash
+    # check gpu status
     $ nvidia-smi
 
     Thu Oct 21 09:49:06 2021

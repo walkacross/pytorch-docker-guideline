@@ -4,8 +4,11 @@
 # Command: docker build -f /absolute/path/to/Dockerfile -t repository_name:tag_description .
 # Description: 
 # 1. image using tsinghua mirrors to replace default mirrors.
-# 2. avaiable software: git, vim, curl, gcc, conda, etc
+# 2. avaiable software: ssh, git, vim, curl, gcc, conda, etc
 # 3. avaiable python packages: pytorch=1.8.1, torchvision=0.9.1, jupyterlab, etc
+# 4. ssh login info: username -> user, password -> user123
+
+# Fetch image from nvidia official respository
 FROM nvidia/cuda:11.1.1-base-ubuntu20.04
 
 # Ubuntu Release name
@@ -43,6 +46,7 @@ deb-src http://mirrors.tuna.tsinghua.edu.cn/ubuntu/ name-block-security main res
   sudo \
   git \
   vim \
+  openssh-server \
   bzip2 \
   libx11-6 \
   build-essential \
@@ -57,7 +61,8 @@ RUN mkdir /app
 WORKDIR /app
 
 # 3. Create a non-root user and switch to it
-RUN adduser --disabled-password --gecos '' --shell /bin/bash user \
+RUN useradd -m -c "default account written in dockerfile" -s /bin/bash user \
+&& echo "user:user123" | chpasswd user \
 && chown -R user:user /app \
 && echo "user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/90-user
 USER user
@@ -104,5 +109,5 @@ custom_channels:\n\
 # 
 && pip install cmake --no-cache-dir
 
-# Set the default command to bash
-CMD ["/bin/bash"]
+# start ssh service automatically and enter bash
+ENTRYPOINT sudo service ssh start && /bin/bash
