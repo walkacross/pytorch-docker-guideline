@@ -11,6 +11,9 @@
 # Fetch image from nvidia official respository
 FROM nvidia/cuda:11.1.1-base-ubuntu20.04
 
+# utf-8 support
+ENV LANG C.UTF-8
+
 # container expose port 22
 EXPOSE 22
 
@@ -21,9 +24,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # 1. Install preparation
 #
-# step 1.1: backup default mirrors list
+# step 1.1: backup default mirrors list and set timezone
 #
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak \
+&& cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+&& echo "Asia/Shanghai" > /etc/timezone \
 #
 # step 1.2: write tsinghua mirrors to source list
 #
